@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: bluegreen-www
+  namespace: bluegreen-test
+spec:
+  replicas: 5
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: bluegreen-www
+  template:
+    metadata:
+      labels:
+        app: bluegreen-www
+    spec:
+      containers:
+      - name: www
+        image: ghcr.io/fase29/canary-test-www:0.1
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet: { path: /, port: 80 }
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        resources:
+          requests: { cpu: 10m, memory: 16Mi }
+          limits:   { memory: 64Mi }
+  strategy:
+    blueGreen:
+      activeService: bluegreen-www-active
+      previewService: bluegreen-www-preview
+      autoPromotionEnabled: false
+      scaleDownDelaySeconds: 60
