@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: www
-        image: ghcr.io/fase29/canary-test-www:0.2
+        image: ghcr.io/fase29/canary-test-www:0.3
         ports:
         - containerPort: 80
         readinessProbe:
