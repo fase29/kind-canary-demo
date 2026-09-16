@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: canary-test-www
+  name: argocd-root-app
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/fase29/kind-canary-demo.git
     targetRevision: master
-    path: manifests
+    path: argocd-apps
   destination:
     server: https://kubernetes.default.svc
-    namespace: canary-test
+    namespace: argocd
   syncPolicy:
       automated:
         selfHeal: true
