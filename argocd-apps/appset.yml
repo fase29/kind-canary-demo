@@ -1,0 +1,49 @@
+  apiVersion: argoproj.io/v1alpha1
+  kind: ApplicationSet
+  metadata:
+    name: www-demos
+    namespace: argocd
+  spec:
+    goTemplate: true
+    goTemplateOptions: ["missingkey=error"]
+
+    generators:
+    - list:
+        elements:
+        - name: canary-test-www
+          path: manifests/canary-www
+          namespace: canary-test
+        - name: bluegreen-www
+          path: manifests/bluegreen-www
+          namespace: bluegreen-test
+
+    template:
+      metadata:
+        name: "{{ .name }}"
+        labels:
+          demo: argo-rollouts
+      spec:
+        project: default
+        source:
+          repoURL: https://github.com/fase29/kind-canary-demo.git
+          targetRevision: master
+          path: "{{ .path }}"
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: "{{ .namespace }}"
+        syncPolicy:
+          automated:
+            selfHeal: true
+            prune: true
+          syncOptions:
+          - CreateNamespace=true
+        ignoreDifferences:
+        - group: ""
+          kind: Service
+          jsonPointers:
+          - /spec/selector
+
+    syncPolicy:
+      applicationsSync: create-update
+      preserveResourcesOnDeletion: false
+
