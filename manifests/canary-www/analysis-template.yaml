@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: healthz-check
+  namespace: canary-test
+spec:
+  args:
+  - name: service-url
+    value: http://canary-test-www.canary-test.svc.cluster.local
+  metrics:
+  - name: healthz
+    initialDelay: 10s      # let the new pod finish warming up
+    interval: 20s          # run the Job every 20s...
+    count: 3               # ...three times, then pass
+    failureLimit: 0        # a single failing Job aborts the rollout
+    provider:
+      job:
+        spec:
+          backoffLimit: 0
+          template:
+            spec:
+              restartPolicy: Never
+              containers:
+              - name: healthz
+                image: curlimages/curl:8.11.1
+                command: ["/bin/sh", "-c"]
+                args:
+                - |
+                  fail=0
+                  for i in $(seq 1 30); do
+                    curl -sf -o /dev/null "{{args.service-url}}/healthz" || fail=$((fail+1))
+                  done
+                  echo "failed $fail of 30 requests"
+                  [ "$fail" -eq 0 ]

@@ -32,10 +32,16 @@ spec:
       maxUnavailable: 2
       steps:
       - setWeight: 20
-      - pause: {}
+      - analysis:                      # automatic gate
+          templates:
+          - templateName: healthz-check
+      - pause: {}                      # manual gate
       - setWeight: 40
       - pause: {}
       - setWeight: 60
+      - analysis:                      # automatic gate
+          templates:
+          - templateName: healthz-check
       - pause: {}
       - setWeight: 80
       - pause: {}
